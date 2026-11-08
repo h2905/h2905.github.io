@@ -1,0 +1,2871 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="面向高级别自动驾驶的线控底盘平台——复杂系统工程小组讨论网页">
+  <title>线控底盘平台｜复杂系统层级研究</title>
+  <style>
+    :root {
+      --paper: #f2f3ed;
+      --paper-2: #e7e9df;
+      --ink: #111a1c;
+      --ink-2: #172326;
+      --muted: #6b7474;
+      --line: rgba(17, 26, 28, 0.15);
+      --dark-line: rgba(255, 255, 255, 0.14);
+      --acid: #d7ff64;
+      --acid-soft: #e9ff9c;
+      --orange: #ff6b3d;
+      --cyan: #6de8df;
+      --white: #fbfcf7;
+      --radius: 22px;
+      --display: "Arial Narrow", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+      --sans: "HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 88px;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    ::selection {
+      background: var(--acid);
+      color: var(--ink);
+    }
+
+    .skip-link {
+      position: fixed;
+      left: 16px;
+      top: -80px;
+      z-index: 200;
+      background: var(--acid);
+      color: var(--ink);
+      padding: 12px 18px;
+      border-radius: 8px;
+      transition: top 0.2s;
+    }
+
+    .skip-link:focus {
+      top: 16px;
+    }
+
+    .site-nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+      padding: 0 4vw;
+      color: var(--white);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background 0.35s, backdrop-filter 0.35s, height 0.35s;
+    }
+
+    .site-nav.scrolled {
+      height: 64px;
+      background: rgba(14, 22, 24, 0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--display);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      background: var(--acid);
+    }
+
+    .brand-mark::before {
+      width: 12px;
+      height: 2px;
+    }
+
+    .brand-mark::after {
+      width: 2px;
+      height: 12px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: clamp(16px, 2.3vw, 34px);
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links a {
+      position: relative;
+      padding: 8px 0;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: 1px;
+      height: 2px;
+      background: var(--acid);
+      transition: right 0.25s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--white);
+    }
+
+    .nav-links a:hover::after,
+    .nav-links a.active::after {
+      right: 0;
+    }
+
+    .menu-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--white);
+      cursor: pointer;
+    }
+
+    .menu-toggle span,
+    .menu-toggle::before,
+    .menu-toggle::after {
+      display: block;
+      width: 16px;
+      height: 1px;
+      margin: 4px auto;
+      background: currentColor;
+      content: "";
+    }
+
+    .hero {
+      position: relative;
+      min-height: 760px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      color: var(--white);
+      background:
+        radial-gradient(circle at 77% 40%, rgba(109, 232, 223, 0.12), transparent 28%),
+        radial-gradient(circle at 10% 90%, rgba(215, 255, 100, 0.08), transparent 30%),
+        linear-gradient(125deg, #0a1112 0%, #111d20 72%, #16272a 100%);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.12;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.16) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to right, transparent, black 30%, black 80%, transparent);
+    }
+
+    .hero::after {
+      content: "WIRE-CONTROL CHASSIS / L3+";
+      position: absolute;
+      right: -108px;
+      top: 50%;
+      color: rgba(255,255,255,0.035);
+      font: 800 clamp(54px, 8vw, 116px)/1 var(--display);
+      letter-spacing: -0.03em;
+      transform: rotate(90deg) translateX(50%);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      width: min(1420px, 92vw);
+      margin: 104px auto 44px;
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(440px, 1.08fr);
+      align-items: center;
+      gap: 2vw;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      color: var(--acid);
+      font: 700 11px/1.2 var(--display);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 30px;
+      height: 2px;
+      background: currentColor;
+      content: "";
+    }
+
+    .hero h1 {
+      max-width: 760px;
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(54px, 6.2vw, 102px);
+      line-height: 0.94;
+      letter-spacing: -0.065em;
+      font-weight: 900;
+    }
+
+    .hero h1 .soft {
+      color: rgba(255, 255, 255, 0.36);
+    }
+
+    .hero h1 .accent {
+      color: var(--acid);
+    }
+
+    .hero-copy {
+      max-width: 620px;
+      margin: 30px 0 0;
+      color: rgba(255, 255, 255, 0.68);
+      font-size: clamp(15px, 1.25vw, 18px);
+      line-height: 1.8;
+    }
+
+    .hero-copy strong {
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 38px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      min-height: 50px;
+      padding: 0 22px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      color: var(--white);
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--white);
+    }
+
+    .btn.primary {
+      border-color: var(--acid);
+      color: var(--ink);
+      background: var(--acid);
+    }
+
+    .btn.primary:hover {
+      border-color: var(--acid-soft);
+      background: var(--acid-soft);
+    }
+
+    .btn .arrow {
+      font-size: 19px;
+      line-height: 1;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 500px;
+    }
+
+    .visual-orbit {
+      position: absolute;
+      width: min(40vw, 570px);
+      aspect-ratio: 1;
+      left: 50%;
+      top: 50%;
+      border: 1px solid rgba(109, 232, 223, 0.13);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: orbit 18s linear infinite;
+    }
+
+    .visual-orbit::before,
+    .visual-orbit::after {
+      content: "";
+      position: absolute;
+      border: 1px dashed rgba(109, 232, 223, 0.09);
+      border-radius: 50%;
+    }
+
+    .visual-orbit::before {
+      inset: 10%;
+    }
+
+    .visual-orbit::after {
+      inset: 24%;
+    }
+
+    .orbit-dot {
+      position: absolute;
+      left: 49.3%;
+      top: -5px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--acid);
+      box-shadow: 0 0 20px var(--acid);
+    }
+
+    @keyframes orbit {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .hero-car {
+      position: absolute;
+      width: 88%;
+      left: 6%;
+      top: 50%;
+      transform: translateY(-45%);
+      filter: drop-shadow(0 26px 40px rgba(0, 0, 0, 0.4));
+    }
+
+    .hero-car .car-body {
+      fill: #162629;
+      stroke: rgba(215, 255, 100, 0.64);
+      stroke-width: 1.25;
+    }
+
+    .hero-car .car-glass {
+      fill: #1f363a;
+      stroke: rgba(109, 232, 223, 0.32);
+      stroke-width: 1;
+    }
+
+    .hero-car .wheel {
+      fill: #0b1112;
+      stroke: rgba(255, 255, 255, 0.32);
+      stroke-width: 2;
+    }
+
+    .hero-car .wheel-core {
+      fill: #23363a;
+    }
+
+    .hero-car .signal {
+      fill: none;
+      stroke: var(--acid);
+      stroke-width: 1.6;
+      stroke-dasharray: 5 7;
+      animation: dash 2.8s linear infinite;
+    }
+
+    .hero-car .signal-cyan {
+      stroke: var(--cyan);
+      animation-duration: 2.2s;
+    }
+
+    .hero-car .sensor-zone {
+      fill: rgba(109, 232, 223, 0.035);
+      stroke: rgba(109, 232, 223, 0.22);
+      stroke-width: 1;
+      stroke-dasharray: 4 8;
+    }
+
+    .hero-car text {
+      fill: rgba(255, 255, 255, 0.54);
+      font-family: var(--display);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    @keyframes dash {
+      to { stroke-dashoffset: -48; }
+    }
+
+    .layer-badge {
+      position: absolute;
+      right: 0;
+      top: 17%;
+      width: 196px;
+      padding: 18px;
+      border: 1px solid rgba(215, 255, 100, 0.36);
+      background: rgba(9, 17, 18, 0.78);
+      backdrop-filter: blur(14px);
+      border-radius: 14px;
+    }
+
+    .layer-badge small {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(255,255,255,0.45);
+      font: 700 9px/1 var(--display);
+      letter-spacing: 0.17em;
+    }
+
+    .layer-badge strong {
+      display: block;
+      color: var(--acid);
+      font: 800 25px/1 var(--display);
+      letter-spacing: -0.03em;
+    }
+
+    .layer-badge span {
+      display: block;
+      margin-top: 8px;
+      color: rgba(255,255,255,0.58);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .hero-index {
+      position: absolute;
+      z-index: 2;
+      left: 4vw;
+      right: 4vw;
+      bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(255, 255, 255, 0.34);
+      font: 700 9px/1 var(--display);
+      letter-spacing: 0.17em;
+      text-transform: uppercase;
+    }
+
+    .scroll-cue {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .scroll-cue::after {
+      width: 50px;
+      height: 1px;
+      background: currentColor;
+      content: "";
+    }
+
+    .section {
+      position: relative;
+      padding: clamp(86px, 10vw, 146px) 4vw;
+    }
+
+    .section-inner {
+      width: min(1420px, 100%);
+      margin: 0 auto;
+    }
+
+    .section-kicker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 23px;
+      color: #56706e;
+      font: 800 10px/1 var(--display);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .section-kicker span {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      font-size: 9px;
+    }
+
+    .section-heading {
+      max-width: 1020px;
+      margin: 0;
+      font: 800 clamp(34px, 5vw, 70px)/1.08 var(--display);
+      letter-spacing: -0.045em;
+    }
+
+    .section-lead {
+      max-width: 650px;
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.85;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .thesis-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.45fr);
+      gap: 20px;
+      margin-top: 58px;
+    }
+
+    .thesis-main {
+      position: relative;
+      overflow: hidden;
+      min-height: 390px;
+      padding: clamp(30px, 4vw, 58px);
+      color: var(--white);
+      background: var(--ink);
+      border-radius: var(--radius);
+    }
+
+    .thesis-main::before {
+      content: "01";
+      position: absolute;
+      right: 22px;
+      bottom: -46px;
+      color: rgba(255,255,255,0.035);
+      font: 900 240px/1 var(--display);
+      letter-spacing: -0.09em;
+    }
+
+    .quote-mark {
+      color: var(--acid);
+      font: 900 54px/0.6 Georgia, serif;
+    }
+
+    .thesis-main blockquote {
+      position: relative;
+      z-index: 1;
+      max-width: 850px;
+      margin: 42px 0 26px;
+      font: 800 clamp(28px, 3.2vw, 48px)/1.34 var(--display);
+      letter-spacing: -0.035em;
+    }
+
+    .thesis-main blockquote em {
+      color: var(--acid);
+      font-style: normal;
+    }
+
+    .thesis-main p {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.59);
+      line-height: 1.85;
+      font-size: 14px;
+    }
+
+    .boundary-card {
+      display: grid;
+      overflow: hidden;
+      padding: 10px;
+      background: #e6e8df;
+      border-radius: var(--radius);
+    }
+
+    .boundary-item {
+      padding: 26px;
+      border-radius: 15px;
+    }
+
+    .boundary-item.yes {
+      color: var(--white);
+      background: #263a3a;
+    }
+
+    .boundary-item.no {
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .boundary-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font: 800 10px/1 var(--display);
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .boundary-label::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--acid);
+      content: "";
+    }
+
+    .boundary-item.no .boundary-label::before {
+      background: var(--orange);
+    }
+
+    .boundary-item p {
+      margin: 16px 0 0;
+      font-size: 13px;
+      line-height: 1.75;
+      opacity: 0.72;
+    }
+
+    .level-section {
+      color: var(--white);
+      background: var(--ink-2);
+      overflow: hidden;
+    }
+
+    .level-section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.07;
+      background:
+        linear-gradient(120deg, transparent 48%, var(--white) 49%, transparent 50%) 0 0 / 80px 80px;
+      pointer-events: none;
+    }
+
+    .level-section .section-kicker {
+      color: var(--acid);
+    }
+
+    .level-section .section-lead {
+      color: rgba(255,255,255,0.53);
+    }
+
+    .level-chain {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(130px, 1fr));
+      gap: 9px;
+      margin-top: 60px;
+    }
+
+    .level-card {
+      position: relative;
+      min-height: 158px;
+      padding: 22px 20px 18px;
+      border: 1px solid var(--dark-line);
+      border-radius: 6px 22px 6px 6px;
+      color: var(--white);
+      background: rgba(255,255,255,0.025);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.25s, background 0.25s, border-color 0.25s;
+    }
+
+    .level-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .level-card.active {
+      color: var(--ink);
+      border-color: var(--acid);
+      background: var(--acid);
+    }
+
+    .level-card .num {
+      display: block;
+      margin-bottom: 30px;
+      color: rgba(255,255,255,0.36);
+      font: 800 10px/1 var(--display);
+      letter-spacing: 0.12em;
+    }
+
+    .level-card.active .num {
+      color: rgba(17,26,28,0.48);
+    }
+
+    .level-card strong {
+      display: block;
+      font: 800 19px/1.2 var(--display);
+      letter-spacing: -0.01em;
+    }
+
+    .level-card small {
+      display: block;
+      margin-top: 7px;
+      color: rgba(255,255,255,0.44);
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .level-card.active small {
+      color: rgba(17,26,28,0.62);
+    }
+
+    .level-card .selected {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      padding: 5px 8px;
+      border-radius: 99px;
+      color: var(--ink);
+      background: var(--acid);
+      font: 800 8px/1 var(--display);
+      letter-spacing: 0.08em;
+    }
+
+    .level-card.active .selected {
+      color: var(--white);
+      background: var(--ink);
+    }
+
+    .level-detail {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 0.73fr 1.27fr;
+      min-height: 320px;
+      margin-top: 14px;
+      border: 1px solid var(--dark-line);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .detail-id {
+      position: relative;
+      padding: clamp(30px, 4vw, 54px);
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .detail-id .big-num {
+      color: var(--acid);
+      font: 900 clamp(80px, 10vw, 150px)/0.8 var(--display);
+      letter-spacing: -0.08em;
+    }
+
+    .detail-id .detail-label {
+      margin-top: 36px;
+      color: rgba(255,255,255,0.36);
+      font: 800 10px/1 var(--display);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .detail-id h3 {
+      margin: 10px 0 0;
+      font: 800 clamp(25px, 2.7vw, 38px)/1.18 var(--display);
+    }
+
+    .detail-id h3 span {
+      display: block;
+      margin-top: 8px;
+      color: rgba(255,255,255,0.37);
+      font-size: 0.45em;
+      letter-spacing: 0.03em;
+    }
+
+    .detail-content {
+      padding: clamp(30px, 4vw, 54px);
+      display: grid;
+      align-content: center;
+    }
+
+    .detail-content > p {
+      max-width: 860px;
+      margin: 0;
+      color: rgba(255,255,255,0.66);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .detail-points {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .detail-point {
+      min-height: 94px;
+      padding: 17px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.025);
+    }
+
+    .detail-point span {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--acid);
+      font: 800 8px/1 var(--display);
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .detail-point strong {
+      display: block;
+      color: rgba(255,255,255,0.82);
+      font-size: 12px;
+      line-height: 1.62;
+      font-weight: 500;
+    }
+
+    .fade-swap {
+      animation: fadeSwap 0.38s ease both;
+    }
+
+    @keyframes fadeSwap {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .architecture-section {
+      background:
+        radial-gradient(circle at 100% 0%, rgba(109, 232, 223, 0.17), transparent 30%),
+        var(--paper);
+    }
+
+    .arch-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+    }
+
+    .arch-note {
+      width: 245px;
+      padding-left: 18px;
+      border-left: 2px solid var(--orange);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .arch-board {
+      position: relative;
+      margin-top: 60px;
+      padding: clamp(22px, 4vw, 54px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(255,255,255,0.48);
+      overflow: hidden;
+    }
+
+    .arch-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .arch-top .tag {
+      color: var(--muted);
+      font: 800 9px/1 var(--display);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .live-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #436a66;
+      font: 800 9px/1 var(--display);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .live-state::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #57b88d;
+      box-shadow: 0 0 0 5px rgba(87,184,141,0.13);
+      content: "";
+      animation: pulse 1.9s infinite;
+    }
+
+    @keyframes pulse {
+      50% { box-shadow: 0 0 0 9px rgba(87,184,141,0); }
+    }
+
+    .arch-stage {
+      position: relative;
+      display: grid;
+      grid-template-columns: 0.75fr 1.25fr 0.75fr;
+      align-items: stretch;
+      gap: clamp(22px, 4vw, 70px);
+    }
+
+    .arch-column {
+      position: relative;
+      z-index: 1;
+    }
+
+    .arch-column-label {
+      margin-bottom: 15px;
+      color: var(--muted);
+      font: 800 9px/1 var(--display);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .source-panel {
+      padding: 28px;
+      border-radius: 18px;
+      color: var(--white);
+      background: var(--ink);
+      min-height: 245px;
+    }
+
+    .source-panel h3 {
+      margin: 0;
+      color: var(--acid);
+      font: 800 20px/1.2 var(--display);
+    }
+
+    .source-panel .cn {
+      margin: 6px 0 24px;
+      color: rgba(255,255,255,0.42);
+      font-size: 11px;
+    }
+
+    .signal-list {
+      display: grid;
+      gap: 11px;
+    }
+
+    .signal-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.67);
+      font-size: 11px;
+    }
+
+    .signal-row span:last-child {
+      color: var(--cyan);
+      font-family: monospace;
+      font-size: 9px;
+    }
+
+    .chassis-controller {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 245px;
+      border: 1px solid rgba(17,26,28,0.2);
+      border-radius: 18px;
+      background: #eef0e7;
+      overflow: hidden;
+    }
+
+    .chassis-controller::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px dashed rgba(17,26,28,0.13);
+      border-radius: 12px;
+    }
+
+    .controller-core {
+      position: relative;
+      z-index: 1;
+      width: 150px;
+      height: 150px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      text-align: center;
+      background: var(--acid);
+      box-shadow: 0 0 0 12px rgba(215,255,100,0.25), 0 20px 45px rgba(17,26,28,0.1);
+    }
+
+    .controller-core small {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(17,26,28,0.54);
+      font: 800 8px/1 var(--display);
+      letter-spacing: 0.14em;
+    }
+
+    .controller-core strong {
+      display: block;
+      font: 900 21px/1.05 var(--display);
+    }
+
+    .controller-core span {
+      display: block;
+      margin-top: 8px;
+      font-size: 9px;
+    }
+
+    .controller-corner {
+      position: absolute;
+      padding: 6px 9px;
+      border: 1px solid rgba(17,26,28,0.15);
+      border-radius: 5px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.7);
+      font: 700 8px/1 var(--display);
+      letter-spacing: 0.08em;
+    }
+
+    .controller-corner.tl { left: 22px; top: 22px; }
+    .controller-corner.tr { right: 22px; top: 22px; }
+    .controller-corner.bl { left: 22px; bottom: 22px; }
+    .controller-corner.br { right: 22px; bottom: 22px; }
+
+    .subsystem-stack {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .subsystem {
+      min-height: 118px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.5);
+      transition: transform 0.22s, border-color 0.22s, background 0.22s;
+      cursor: default;
+    }
+
+    .subsystem:hover {
+      transform: translateY(-3px);
+      border-color: var(--orange);
+      background: var(--white);
+    }
+
+    .subsystem .sub-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .subsystem .icon {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+    }
+
+    .subsystem .icon::before,
+    .subsystem .icon::after {
+      content: "";
+      position: absolute;
+      background: var(--orange);
+    }
+
+    .subsystem .icon::before { width: 8px; height: 1px; left: 7px; top: 11px; }
+    .subsystem .icon::after { width: 1px; height: 8px; left: 11px; top: 7px; }
+
+    .subsystem .index {
+      color: #9ca3a0;
+      font: 800 8px/1 var(--display);
+      letter-spacing: 0.1em;
+    }
+
+    .subsystem strong {
+      display: block;
+      font-size: 12px;
+    }
+
+    .subsystem small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.4;
+    }
+
+    .arch-connector {
+      position: absolute;
+      z-index: 0;
+      top: 50%;
+      height: 1px;
+      background: repeating-linear-gradient(to right, rgba(17,26,28,0.34) 0 4px, transparent 4px 9px);
+    }
+
+    .arch-connector.left {
+      left: 24%;
+      width: 18%;
+    }
+
+    .arch-connector.right {
+      right: 24%;
+      width: 18%;
+    }
+
+    .arch-connector::after {
+      position: absolute;
+      top: -3px;
+      right: 0;
+      width: 7px;
+      height: 7px;
+      border-top: 1px solid var(--ink);
+      border-right: 1px solid var(--ink);
+      transform: rotate(45deg);
+      content: "";
+    }
+
+    .signal-dot {
+      position: absolute;
+      top: -3px;
+      left: 0;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--orange);
+      animation: travel 2.4s ease-in-out infinite;
+    }
+
+    @keyframes travel {
+      0%, 10% { left: 0; opacity: 0; }
+      20% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { left: calc(100% - 7px); opacity: 0; }
+    }
+
+    .arch-bottom {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      margin-top: 42px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .arch-principle {
+      padding: 22px 20px;
+      border-right: 1px solid var(--line);
+    }
+
+    .arch-principle:last-child {
+      border-right: 0;
+    }
+
+    .arch-principle span {
+      color: var(--orange);
+      font: 800 9px/1 var(--display);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .arch-principle strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .scenario-section {
+      overflow: hidden;
+      color: var(--white);
+      background: #0c1416;
+    }
+
+    .scenario-section::before {
+      content: "";
+      position: absolute;
+      width: 680px;
+      height: 680px;
+      top: 140px;
+      right: -280px;
+      border: 1px solid rgba(215,255,100,0.12);
+      border-radius: 50%;
+      box-shadow: 0 0 0 80px rgba(215,255,100,0.018), 0 0 0 160px rgba(215,255,100,0.012);
+      pointer-events: none;
+    }
+
+    .scenario-section .section-kicker {
+      color: var(--acid);
+    }
+
+    .scenario-section .section-lead {
+      color: rgba(255,255,255,0.52);
+    }
+
+    .scenario-shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: 42px;
+      margin-top: 58px;
+    }
+
+    .scenario-tabs {
+      display: grid;
+      align-content: start;
+      gap: 9px;
+    }
+
+    .scenario-tab {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 17px 18px;
+      border: 1px solid var(--dark-line);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.54);
+      background: transparent;
+      font-size: 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+
+    .scenario-tab .no {
+      color: rgba(255,255,255,0.27);
+      font: 800 9px/1 var(--display);
+    }
+
+    .scenario-tab:hover {
+      border-color: rgba(255,255,255,0.3);
+      color: var(--white);
+    }
+
+    .scenario-tab.active {
+      color: var(--ink);
+      border-color: var(--acid);
+      background: var(--acid);
+    }
+
+    .scenario-tab.active .no {
+      color: rgba(17,26,28,0.43);
+    }
+
+    .scenario-panel {
+      min-width: 0;
+    }
+
+    .scenario-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 25px;
+      border-bottom: 1px solid var(--dark-line);
+    }
+
+    .scenario-heading h3 {
+      margin: 0;
+      font: 800 clamp(24px, 3vw, 42px)/1.15 var(--display);
+      letter-spacing: -0.03em;
+    }
+
+    .scenario-heading p {
+      max-width: 410px;
+      margin: 0;
+      color: rgba(255,255,255,0.48);
+      font-size: 12px;
+      line-height: 1.7;
+      text-align: right;
+    }
+
+    .scenario-chain {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      margin-top: 28px;
+    }
+
+    .scenario-step {
+      position: relative;
+      min-height: 185px;
+      padding: 20px 15px 20px 0;
+    }
+
+    .scenario-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 27px;
+      left: 26px;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(to right, rgba(215,255,100,0.48), rgba(215,255,100,0.08));
+    }
+
+    .step-dot {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      width: 15px;
+      height: 15px;
+      margin-bottom: 25px;
+      border: 1px solid var(--acid);
+      border-radius: 50%;
+      background: #0c1416;
+    }
+
+    .step-dot::after {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--acid);
+      content: "";
+    }
+
+    .scenario-step small {
+      display: block;
+      margin-bottom: 7px;
+      color: rgba(255,255,255,0.3);
+      font: 800 8px/1 var(--display);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .scenario-step strong {
+      display: block;
+      min-height: 35px;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .scenario-step p {
+      margin: 8px 0 0;
+      padding-right: 12px;
+      color: rgba(255,255,255,0.44);
+      font-size: 9px;
+      line-height: 1.65;
+    }
+
+    .scenario-status {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      overflow: hidden;
+      margin-top: 28px;
+      border: 1px solid var(--dark-line);
+      border-radius: 14px;
+      background: var(--dark-line);
+    }
+
+    .status-cell {
+      padding: 20px;
+      background: #111c1e;
+    }
+
+    .status-cell small {
+      display: block;
+      color: rgba(255,255,255,0.32);
+      font: 800 8px/1 var(--display);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .status-cell strong {
+      display: block;
+      margin-top: 9px;
+      color: var(--acid);
+      font: 800 17px/1.15 var(--display);
+    }
+
+    .status-cell span {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255,255,255,0.4);
+      font-size: 9px;
+    }
+
+    .principles-section {
+      background: var(--paper-2);
+    }
+
+    .principles-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 58px;
+    }
+
+    .principle-card {
+      position: relative;
+      min-height: 330px;
+      padding: 28px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.4);
+      transition: transform 0.25s, background 0.25s;
+    }
+
+    .principle-card:hover {
+      transform: translateY(-6px);
+      background: var(--white);
+    }
+
+    .principle-card .p-index {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #847f75;
+      font: 800 9px/1 var(--display);
+      letter-spacing: 0.13em;
+    }
+
+    .principle-card .p-index::after {
+      width: 38px;
+      height: 1px;
+      background: var(--line);
+      content: "";
+    }
+
+    .principle-card h3 {
+      margin: 54px 0 16px;
+      font: 800 25px/1.17 var(--display);
+      letter-spacing: -0.025em;
+    }
+
+    .principle-card h3 span {
+      display: block;
+      margin-top: 5px;
+      color: #8b918c;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .principle-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.75;
+    }
+
+    .principle-card::before {
+      content: "";
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      left: -60px;
+      bottom: -60px;
+      border: 1px solid var(--orange);
+      border-radius: 50%;
+      box-shadow: 0 0 0 17px rgba(255,107,61,0.025), 0 0 0 34px rgba(255,107,61,0.018);
+      transition: transform 0.3s;
+    }
+
+    .principle-card:hover::before {
+      transform: scale(1.15) translate(8px, -8px);
+    }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: 1.1fr repeat(3, 0.63fr);
+      gap: 1px;
+      margin-top: 20px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--line);
+    }
+
+    .metric-intro,
+    .metric {
+      min-height: 140px;
+      padding: 26px;
+      background: var(--paper);
+    }
+
+    .metric-intro {
+      background: #dce1d5;
+    }
+
+    .metric-intro strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .metric-intro span {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    .metric strong {
+      display: block;
+      font: 800 24px/1 var(--display);
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 13px;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.55;
+    }
+
+    .conclusion-section {
+      padding-bottom: 0;
+      background: var(--paper);
+    }
+
+    .conclusion-card {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(34px, 5.6vw, 84px);
+      color: var(--white);
+      border-radius: 28px 28px 0 0;
+      background: var(--ink);
+    }
+
+    .conclusion-card::after {
+      content: "";
+      position: absolute;
+      right: -130px;
+      top: -130px;
+      width: 450px;
+      height: 450px;
+      border: 1px solid rgba(215,255,100,0.15);
+      border-radius: 50%;
+      box-shadow: 0 0 0 70px rgba(215,255,100,0.025), 0 0 0 140px rgba(215,255,100,0.012);
+    }
+
+    .conclusion-card .section-kicker {
+      position: relative;
+      z-index: 1;
+      color: var(--acid);
+    }
+
+    .conclusion-card h2 {
+      position: relative;
+      z-index: 1;
+      max-width: 1150px;
+      margin: 0;
+      font: 800 clamp(35px, 5.4vw, 76px)/1.12 var(--display);
+      letter-spacing: -0.05em;
+    }
+
+    .conclusion-card h2 span {
+      color: var(--acid);
+    }
+
+    .takeaways {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      margin-top: 64px;
+      background: var(--dark-line);
+    }
+
+    .takeaway {
+      min-height: 170px;
+      padding: 24px 28px 24px 0;
+      background: var(--ink);
+    }
+
+    .takeaway + .takeaway {
+      padding-left: 28px;
+    }
+
+    .takeaway span {
+      color: var(--acid);
+      font: 800 9px/1 var(--display);
+      letter-spacing: 0.12em;
+    }
+
+    .takeaway strong {
+      display: block;
+      margin-top: 18px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .takeaway p {
+      margin: 11px 0 0;
+      color: rgba(255,255,255,0.45);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .site-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 30px 4vw;
+      color: rgba(255,255,255,0.36);
+      background: var(--ink);
+      border-top: 1px solid var(--dark-line);
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    .footer-brand {
+      color: rgba(255,255,255,0.7);
+      font: 800 10px/1 var(--display);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .to-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 36px;
+      padding: 0 13px;
+      border: 1px solid var(--dark-line);
+      border-radius: 99px;
+      color: rgba(255,255,255,0.6);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .to-top:hover {
+      color: var(--acid);
+      border-color: var(--acid);
+    }
+
+    @media (max-width: 1120px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        padding-top: 10px;
+      }
+
+      .hero-visual {
+        min-height: 420px;
+        margin-top: -30px;
+      }
+
+      .hero-car {
+        width: min(720px, 76%);
+        left: 12%;
+      }
+
+      .visual-orbit {
+        width: min(68vw, 510px);
+      }
+
+      .layer-badge {
+        right: 5%;
+      }
+
+      .thesis-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .boundary-card {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .level-chain {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .level-card {
+        min-height: 135px;
+      }
+
+      .arch-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .arch-connector {
+        display: none;
+      }
+
+      .chassis-controller {
+        min-height: 260px;
+      }
+
+      .arch-bottom {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .arch-principle:nth-child(2) {
+        border-right: 0;
+      }
+
+      .arch-principle:nth-child(-n+2) {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .scenario-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .scenario-tabs {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .scenario-tab {
+        min-height: 70px;
+      }
+
+      .scenario-chain {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .scenario-step:nth-child(3)::after {
+        display: none;
+      }
+
+      .scenario-step:nth-child(n+4) {
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .principles-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .metric-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      html {
+        scroll-padding-top: 62px;
+      }
+
+      .site-nav,
+      .site-nav.scrolled {
+        height: 62px;
+        background: rgba(14, 22, 24, 0.94);
+        backdrop-filter: blur(16px);
+      }
+
+      .nav-links {
+        position: fixed;
+        inset: 62px 0 auto;
+        display: grid;
+        gap: 0;
+        padding: 8px 4vw 18px;
+        background: rgba(14, 22, 24, 0.98);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: opacity 0.22s, visibility 0.22s, transform 0.22s;
+      }
+
+      .nav-links.open {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+      }
+
+      .nav-links li {
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+      }
+
+      .nav-links a {
+        display: block;
+        padding: 14px 0;
+        font-size: 13px;
+      }
+
+      .nav-links a::after {
+        display: none;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .hero {
+        min-height: 900px;
+      }
+
+      .hero-inner {
+        width: 92vw;
+        margin-top: 98px;
+      }
+
+      .hero h1 {
+        font-size: clamp(51px, 16vw, 78px);
+      }
+
+      .hero-copy {
+        margin-top: 25px;
+        font-size: 14px;
+      }
+
+      .hero-actions {
+        margin-top: 27px;
+      }
+
+      .hero-visual {
+        min-height: 360px;
+        margin-top: 8px;
+      }
+
+      .hero-car {
+        width: 100%;
+        left: 0;
+        transform: translateY(-44%) rotate(4deg);
+      }
+
+      .visual-orbit {
+        width: 90vw;
+      }
+
+      .layer-badge {
+        right: 0;
+        top: 6%;
+        width: 162px;
+        padding: 14px;
+      }
+
+      .layer-badge strong {
+        font-size: 21px;
+      }
+
+      .hero-index {
+        bottom: 16px;
+      }
+
+      .scroll-cue::after {
+        width: 20px;
+      }
+
+      .section {
+        padding-left: 4vw;
+        padding-right: 4vw;
+      }
+
+      .section-heading {
+        font-size: clamp(34px, 11vw, 53px);
+      }
+
+      .thesis-main {
+        min-height: 450px;
+      }
+
+      .thesis-main blockquote {
+        font-size: 29px;
+      }
+
+      .boundary-card {
+        grid-template-columns: 1fr;
+      }
+
+      .level-chain {
+        display: flex;
+        gap: 8px;
+        margin-right: -4vw;
+        padding-right: 4vw;
+        overflow-x: auto;
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+      }
+
+      .level-chain::-webkit-scrollbar {
+        display: none;
+      }
+
+      .level-card {
+        flex: 0 0 156px;
+        scroll-snap-align: start;
+      }
+
+      .level-detail {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-id {
+        padding-bottom: 34px;
+      }
+
+      .detail-id .big-num {
+        font-size: 88px;
+      }
+
+      .detail-id .detail-label {
+        margin-top: 24px;
+      }
+
+      .detail-content {
+        padding-top: 32px;
+      }
+
+      .detail-points {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-point {
+        min-height: auto;
+      }
+
+      .arch-head {
+        grid-template-columns: 1fr;
+      }
+
+      .arch-note {
+        width: 100%;
+      }
+
+      .arch-board {
+        padding: 20px 14px;
+      }
+
+      .arch-top {
+        margin-bottom: 28px;
+      }
+
+      .source-panel {
+        min-height: auto;
+      }
+
+      .controller-core {
+        width: 134px;
+        height: 134px;
+      }
+
+      .arch-bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .arch-principle {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .arch-principle:last-child {
+        border-bottom: 0;
+      }
+
+      .scenario-tabs {
+        display: flex;
+        overflow-x: auto;
+        margin-right: -4vw;
+        padding-right: 4vw;
+        scrollbar-width: none;
+      }
+
+      .scenario-tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .scenario-tab {
+        flex: 0 0 155px;
+        min-height: 62px;
+      }
+
+      .scenario-heading {
+        display: block;
+      }
+
+      .scenario-heading p {
+        margin-top: 14px;
+        text-align: left;
+      }
+
+      .scenario-chain {
+        grid-template-columns: 1fr;
+        margin-top: 16px;
+      }
+
+      .scenario-step {
+        min-height: auto;
+        padding: 15px 0 15px 45px;
+      }
+
+      .scenario-step:not(:last-child)::after {
+        top: 30px;
+        bottom: 0;
+        left: 22px;
+        right: auto;
+        width: 1px;
+        height: auto;
+        background: linear-gradient(to bottom, rgba(215,255,100,0.45), rgba(215,255,100,0.06));
+      }
+
+      .scenario-step:nth-child(3)::after {
+        display: block;
+      }
+
+      .scenario-step:nth-child(n+4) {
+        border-top: 0;
+      }
+
+      .step-dot {
+        position: absolute;
+        left: 15px;
+        top: 18px;
+        margin: 0;
+      }
+
+      .scenario-step strong {
+        min-height: auto;
+      }
+
+      .scenario-status {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .principles-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .principle-card {
+        min-height: 270px;
+      }
+
+      .metric-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .metric-intro {
+        grid-column: 1 / -1;
+      }
+
+      .takeaways {
+        grid-template-columns: 1fr;
+      }
+
+      .takeaway,
+      .takeaway + .takeaway {
+        min-height: auto;
+        padding: 24px 0;
+      }
+
+      .site-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @media print {
+      .site-nav,
+      .hero-actions,
+      .scroll-cue,
+      .to-top,
+      .scenario-tabs {
+        display: none !important;
+      }
+
+      .hero {
+        min-height: 680px;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .section {
+        break-inside: avoid;
+        padding-top: 60px;
+        padding-bottom: 60px;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+
+  <header class="site-nav" id="site-nav">
+    <a class="brand" href="#top" aria-label="返回首页">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Chassis / Systems</span>
+    </a>
+    <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false">
+      <span></span>
+    </button>
+    <nav aria-label="页面导航">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#position">层级定位</a></li>
+        <li><a href="#levels">六层贯通</a></li>
+        <li><a href="#architecture">平台架构</a></li>
+        <li><a href="#scenario">场景串联</a></li>
+        <li><a href="#principles">设计原则</a></li>
+        <li><a href="#takeaway">讨论结论</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-inner">
+        <div class="hero-copy-wrap">
+          <div class="eyebrow">Complex Systems Engineering · 小组讨论</div>
+          <h1 id="hero-title">
+            线控底盘，<br>
+            <span class="soft">让自动驾驶</span><br>
+            <span class="accent">真正“可执行”</span>
+          </h1>
+          <p class="hero-copy">
+            面向高级别自动驾驶的线控底盘平台，不是一个零件，也不是四个系统的简单相加。
+            它是把<strong>“去哪、如何走、如何安全停”</strong>转化为确定性车辆运动的系统级枢纽。
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#levels">进入六层分析 <span class="arrow" aria-hidden="true">↘</span></a>
+            <a class="btn" href="#takeaway">查看讨论结论 <span class="arrow" aria-hidden="true">→</span></a>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="线控底盘平台概念图">
+          <div class="visual-orbit" aria-hidden="true">
+            <span class="orbit-dot"></span>
+          </div>
+          <svg class="hero-car" viewBox="0 0 740 430" role="img" aria-labelledby="car-title car-desc">
+            <title id="car-title">线控底盘概念示意图</title>
+            <desc id="car-desc">四个车轮通过绿色信号线与中央底盘控制器连接，上方有自动驾驶感知范围。</desc>
+            <path class="sensor-zone" d="M255 128 C300 18, 440 18, 487 128 Z"></path>
+            <path class="sensor-zone" d="M295 138 C330 58, 410 58, 447 138 Z"></path>
+            <path class="car-body" d="M154 146 Q213 75 370 75 Q527 75 586 146 L606 216 Q617 303 574 344 L166 344 Q123 303 134 216 Z"></path>
+            <path class="car-glass" d="M228 144 Q266 102 370 102 Q474 102 512 144 L492 202 L248 202 Z"></path>
+            <path class="car-glass" d="M239 218 L501 218 L474 299 L266 299 Z"></path>
+            <path d="M370 102 L370 344 M154 206 L586 206 M176 304 L564 304" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"></path>
+
+            <g class="wheel">
+              <rect x="97" y="154" width="55" height="88" rx="22"></rect>
+              <rect class="wheel-core" x="108" y="170" width="33" height="56" rx="15"></rect>
+            </g>
+            <g class="wheel">
+              <rect x="588" y="154" width="55" height="88" rx="22"></rect>
+              <rect class="wheel-core" x="599" y="170" width="33" height="56" rx="15"></rect>
+            </g>
+            <g class="wheel">
+              <rect x="97" y="262" width="55" height="88" rx="22"></rect>
+              <rect class="wheel-core" x="108" y="278" width="33" height="56" rx="15"></rect>
+            </g>
+            <g class="wheel">
+              <rect x="588" y="262" width="55" height="88" rx="22"></rect>
+              <rect class="wheel-core" x="599" y="278" width="33" height="56" rx="15"></rect>
+            </g>
+
+            <path class="signal" d="M150 198 L286 198 L286 236 L370 236"></path>
+            <path class="signal signal-cyan" d="M590 198 L454 198 L454 236 L370 236"></path>
+            <path class="signal" d="M150 310 L286 310 L286 274 L370 274"></path>
+            <path class="signal signal-cyan" d="M590 310 L454 310 L454 274 L370 274"></path>
+
+            <circle cx="370" cy="255" r="52" fill="rgba(215,255,100,.08)" stroke="rgba(215,255,100,.34)" stroke-width="1"></circle>
+            <circle cx="370" cy="255" r="32" fill="#d7ff64"></circle>
+            <text x="370" y="250" text-anchor="middle" fill="#111a1c" style="font-size:10px; letter-spacing:.04em;">CHASSIS</text>
+            <text x="370" y="264" text-anchor="middle" fill="#111a1c" style="font-size:10px; letter-spacing:.04em;">DOMAIN</text>
+
+            <text x="151" y="145">STEER ×2</text>
+            <text x="554" y="145">STEER ×2</text>
+            <text x="145" y="378">BRAKE ×4</text>
+            <text x="539" y="378">DRIVE ×4</text>
+            <text x="347" y="412" text-anchor="middle">X-BY-WIRE CORE</text>
+          </svg>
+          <div class="layer-badge">
+            <small>SELECTED LAYER</small>
+            <strong>SYSTEMS</strong>
+            <span>系统层 · 跨子系统集成平台</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-index">
+        <span>01 / 06 · Platform framing</span>
+        <span class="scroll-cue">向下探索</span>
+      </div>
+    </section>
+
+    <section class="section" id="position" aria-labelledby="position-title">
+      <div class="section-inner">
+        <div class="reveal">
+          <div class="section-kicker"><span>01</span> Core position</div>
+          <h2 class="section-heading" id="position-title">先回答：它究竟处在哪一层？</h2>
+          <p class="section-lead">
+            线控底盘平台的本体位于 Systems（系统）层，但它天然跨接 Vehicle（整车）与 Subsystems（子系统）。
+            因此，准确定位不是“底盘零件”，而是“面向整车运动能力的系统集成平台”。
+          </p>
+        </div>
+
+        <div class="thesis-grid">
+          <article class="thesis-main reveal">
+            <div class="quote-mark" aria-hidden="true">“</div>
+            <blockquote>
+              高级别自动驾驶需要的不是一个能转、能刹的底盘，
+              而是一套<em>可冗余、可协同、可降级、可验证</em>的运动执行底座。
+            </blockquote>
+            <p>
+              它对上承接整车运动意图与安全约束，对下协调转向、制动、驱动、悬架子系统，
+              在故障、低附着、极限工况下仍维持可预测的车辆行为。
+            </p>
+          </article>
+          <aside class="boundary-card reveal" aria-label="系统边界">
+            <div class="boundary-item yes">
+              <div class="boundary-label">In scope · 属于平台</div>
+              <p>运动意图分解、多执行器协同、冗余仲裁、状态估计、故障降级、统一接口与标定。</p>
+            </div>
+            <div class="boundary-item no">
+              <div class="boundary-label">Out of scope · 不属于平台</div>
+              <p>感知算法、全局路线规划、云端调度，以及单一电机或单一制动卡钳的本体设计。</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section level-section" id="levels" aria-labelledby="levels-title">
+      <div class="section-inner">
+        <div class="reveal">
+          <div class="section-kicker"><span>02</span> Six-layer traceability</div>
+          <h2 class="section-heading" id="levels-title">从使命到模块，<br>一条需求链走到底。</h2>
+          <p class="section-lead">
+            点击任一层级，查看它的核心问题、典型要素以及与线控底盘平台的关联。
+            橙色方框来自讨论框架；本页选择的是高亮显示的 Systems 层。
+          </p>
+        </div>
+
+        <div class="level-chain reveal" role="tablist" aria-label="复杂系统六层结构">
+          <button class="level-card" type="button" role="tab" aria-selected="false" aria-controls="level-detail" data-level="mission">
+            <span class="num">L1 / MISSION</span>
+            <strong>任务</strong>
+            <small>为什么需要这套系统？</small>
+          </button>
+          <button class="level-card" type="button" role="tab" aria-selected="false" aria-controls="level-detail" data-level="sos">
+            <span class="num">L2 / SO S</span>
+            <strong>体系</strong>
+            <small>由谁协同完成使命？</small>
+          </button>
+          <button class="level-card" type="button" role="tab" aria-selected="false" aria-controls="level-detail" data-level="vehicle">
+            <span class="num">L3 / VEHICLE</span>
+            <strong>整车</strong>
+            <small>以什么产品承载？</small>
+          </button>
+          <button class="level-card active" type="button" role="tab" aria-selected="true" aria-controls="level-detail" data-level="system">
+            <span class="selected">选题</span>
+            <span class="num">L4 / SYSTEMS</span>
+            <strong>系统</strong>
+            <small>如何形成整车能力？</small>
+          </button>
+          <button class="level-card" type="button" role="tab" aria-selected="false" aria-controls="level-detail" data-level="subsystem">
+            <span class="num">L5 / SUBSYSTEM</span>
+            <strong>子系统</strong>
+            <small>能力由什么分担？</small>
+          </button>
+          <button class="level-card" type="button" role="tab" aria-selected="false" aria-controls="level-detail" data-level="module">
+            <span class="num">L6 / MODULE</span>
+            <strong>模块</strong>
+            <small>物理功能如何实现？</small>
+          </button>
+        </div>
+
+        <div class="level-detail reveal" id="level-detail" role="tabpanel" aria-live="polite">
+          <div class="detail-id">
+            <div class="big-num" id="detail-num">04</div>
+            <div class="detail-label">Selected system layer</div>
+            <h3 id="detail-title">系统 <span>Systems · 线控底盘平台</span></h3>
+          </div>
+          <div class="detail-content" id="detail-content">
+            <p id="detail-desc">
+              线控底盘平台把高级别自动驾驶给出的轨迹、速度与安全目标，分解为转向、制动、驱动和悬架的执行指令；
+              同时持续聚合执行器状态，进行冗余仲裁与故障降级，形成整车可验证的运动能力。
+            </p>
+            <div class="detail-points" id="detail-points">
+              <div class="detail-point"><span>输入</span><strong>轨迹 / 速度 / 加速度 / 安全约束</strong></div>
+              <div class="detail-point"><span>平台职责</span><strong>解耦 · 协同 · 仲裁 · 状态估计</strong></div>
+              <div class="detail-point"><span>输出</span><strong>可控、可测、可预测的整车运动</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section architecture-section" id="architecture" aria-labelledby="architecture-title">
+      <div class="section-inner">
+        <div class="arch-head reveal">
+          <div>
+            <div class="section-kicker"><span>03</span> Platform architecture</div>
+            <h2 class="section-heading" id="architecture-title">平台的价值，<br>发生在“连接”之中。</h2>
+          </div>
+          <p class="arch-note">
+            智驾域负责“想去哪里”，底盘平台负责“如何安全抵达”。清晰接口是软硬件解耦与跨车型复用的前提。
+          </p>
+        </div>
+
+        <div class="arch-board reveal">
+          <div class="arch-top">
+            <span class="tag">Reference architecture / 逻辑示意</span>
+            <span class="live-state">Motion loop active</span>
+          </div>
+
+          <div class="arch-stage">
+            <div class="arch-connector left" aria-hidden="true"><span class="signal-dot"></span></div>
+            <div class="arch-connector right" aria-hidden="true"><span class="signal-dot" style="animation-delay:1.2s"></span></div>
+
+            <div class="arch-column">
+              <div class="arch-column-label">Command source</div>
+              <div class="source-panel">
+                <h3>AD Compute</h3>
+                <p class="cn">高级别自动驾驶域</p>
+                <div class="signal-list">
+                  <div class="signal-row"><span>规划轨迹</span><span>TRAJ</span></div>
+                  <div class="signal-row"><span>目标加速度</span><span>ACCEL</span></div>
+                  <div class="signal-row"><span>安全停车请求</span><span>SAFE</span></div>
+                  <div class="signal-row"><span>功能状态</span><span>STATE</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="arch-column">
+              <div class="arch-column-label">System integration</div>
+              <div class="chassis-controller">
+                <span class="controller-corner tl">ARBITRATION</span>
+                <span class="controller-corner tr">REDUNDANCY</span>
+                <span class="controller-corner bl">STATE EST.</span>
+                <span class="controller-corner br">DEGRADATION</span>
+                <div class="controller-core">
+                  <div>
+                    <small>MOTION CORE</small>
+                    <strong>底盘域控制器</strong>
+                    <span>指令分解 · 协同控制</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="arch-column">
+              <div class="arch-column-label">Actuation capability</div>
+              <div class="subsystem-stack">
+                <div class="subsystem">
+                  <div class="sub-top"><span class="icon"></span><span class="index">SUB / 01</span></div>
+                  <strong>线控转向</strong>
+                  <small>角阶跃响应 · 双冗余</small>
+                </div>
+                <div class="subsystem">
+                  <div class="sub-top"><span class="icon"></span><span class="index">SUB / 02</span></div>
+                  <strong>线控制动</strong>
+                  <small>压力控制 · 失效备份</small>
+                </div>
+                <div class="subsystem">
+                  <div class="sub-top"><span class="icon"></span><span class="index">SUB / 03</span></div>
+                  <strong>线控驱动</strong>
+                  <small>扭矩分配 · 快速响应</small>
+                </div>
+                <div class="subsystem">
+                  <div class="sub-top"><span class="icon"></span><span class="index">SUB / 04</span></div>
+                  <strong>线控悬架</strong>
+                  <small>姿态控制 · 高度调节</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arch-bottom">
+            <div class="arch-principle"><span>01 / Interface</span><strong>统一车辆运动接口，降低算法与车型耦合</strong></div>
+            <div class="arch-principle"><span>02 / Coordination</span><strong>纵横垂协同，避免多个执行器互相“打架”</strong></div>
+            <div class="arch-principle"><span>03 / Resilience</span><strong>故障可检测、可隔离、可降级、可安全停车</strong></div>
+            <div class="arch-principle"><span>04 / Evidence</span><strong>从需求、验证到运行数据形成安全证据链</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section scenario-section" id="scenario" aria-labelledby="scenario-title">
+      <div class="section-inner">
+        <div class="reveal">
+          <div class="section-kicker"><span>04</span> End-to-end narrative</div>
+          <h2 class="section-heading" id="scenario-title">一个场景，<br>串起六个层级。</h2>
+          <p class="section-lead">
+            以 L4 城市 Robotaxi 为例，切换场景查看需求如何一路传递到执行器。
+            这证明平台不是孤立技术，而是使命、体系、整车与底层模块之间的“翻译器”。
+          </p>
+        </div>
+
+        <div class="scenario-shell reveal">
+          <div class="scenario-tabs" role="tablist" aria-label="自动驾驶底盘场景">
+            <button class="scenario-tab active" type="button" role="tab" aria-selected="true" data-scenario="crossing">
+              <span>城市路口左转</span><span class="no">01</span>
+            </button>
+            <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="brake">
+              <span>前车突发急停</span><span class="no">02</span>
+            </button>
+            <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="wet">
+              <span>湿滑路面过弯</span><span class="no">03</span>
+            </button>
+            <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="fault">
+              <span>转向通道故障</span><span class="no">04</span>
+            </button>
+          </div>
+
+          <div class="scenario-panel" id="scenario-panel" role="tabpanel" aria-live="polite">
+            <div class="scenario-heading">
+              <h3 id="scenario-name">城市路口左转</h3>
+              <p id="scenario-summary">在混合交通路口完成安全、平顺、可解释的左转，平台需要协同横向、纵向与垂向运动。</p>
+            </div>
+
+            <div class="scenario-chain" id="scenario-chain">
+              <div class="scenario-step">
+                <span class="step-dot"></span><small>Mission</small><strong>安全高效地完成无人物流/载客</strong><p>使命指标：安全、舒适、准时、可持续运营。</p>
+              </div>
+              <div class="scenario-step">
+                <span class="step-dot"></span><small>SoS</small><strong>车队、路云、运营与监管协同</strong><p>云端下发 ODD、交通与救援约束。</p>
+              </div>
+              <div class="scenario-step">
+                <span class="step-dot"></span><small>Vehicle</small><strong>L4 Robotaxi 选择目标轨迹</strong><p>整车评估载荷、速度与安全边界。</p>
+              </div>
+              <div class="scenario-step">
+                <span class="step-dot"></span><small>System</small><strong>平台分解四轮运动指令</strong><p>统一协调转角、制动、驱动与姿态。</p>
+              </div>
+              <div class="scenario-step">
+                <span class="step-dot"></span><small>Subsystem</small><strong>四轮转向协同，悬架抑制侧倾</strong><p>各执行器闭环响应平台命令。</p>
+              </div>
+              <div class="scenario-step">
+                <span class="step-dot"></span><small>Module</small><strong>电机、传感器与控制芯片执行</strong><p>状态反馈进入下一轮运动控制。</p>
+              </div>
+            </div>
+
+            <div class="scenario-status" id="scenario-status">
+              <div class="status-cell"><small>转向目标</small><strong>+32.5°</strong><span>四轮协同转向</span></div>
+              <div class="status-cell"><small>纵向策略</small><strong>12 km/h</strong><span>低速通过路口</span></div>
+              <div class="status-cell"><small>姿态控制</small><strong>主动</strong><span>抑制侧倾与俯仰</span></div>
+              <div class="status-cell"><small>系统状态</small><strong>NORMAL</strong><span>全通道健康</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section principles-section" id="principles" aria-labelledby="principles-title">
+      <div class="section-inner">
+        <div class="reveal">
+          <div class="section-kicker"><span>05</span> Design principles</div>
+          <h2 class="section-heading" id="principles-title">高级别，不只是<br>“把机械连接换成电信号”。</h2>
+          <p class="section-lead">
+            去掉方向盘与制动踏板后，系统必须用工程冗余和安全论证补回人的容错能力。
+            以下四项，是平台从“能线控”走向“敢无人”的关键。
+          </p>
+        </div>
+
+        <div class="principles-grid">
+          <article class="principle-card reveal">
+            <div class="p-index"><span>01 / SAFETY</span></div>
+            <h3>可用冗余<span>Fail-operational</span></h3>
+            <p>关键供电、通信、感知与执行通道应具备故障检测与备份能力，使单点故障后仍能维持可控运动或安全停车。</p>
+          </article>
+          <article class="principle-card reveal">
+            <div class="p-index"><span>02 / MOTION</span></div>
+            <h3>协同控制<span>Motion coordination</span></h3>
+            <p>转向、制动、驱动与悬架不能各自“最优”，而要围绕整车轨迹、稳定性与舒适性进行统一约束和协同。</p>
+          </article>
+          <article class="principle-card reveal">
+            <div class="p-index"><span>03 / PLATFORM</span></div>
+            <h3>软硬解耦<span>Decoupled platform</span></h3>
+            <p>以稳定的车辆运动接口隔离上层算法与底层执行器，让不同车型、供应商和算法版本可以并行演进。</p>
+          </article>
+          <article class="principle-card reveal">
+            <div class="p-index"><span>04 / EVIDENCE</span></div>
+            <h3>证据闭环<span>Safety case</span></h3>
+            <p>把任务指标逐层分解为系统需求、模块阈值和测试用例，用仿真、台架、实车与运营数据共同形成安全证据。</p>
+          </article>
+        </div>
+
+        <div class="metric-strip reveal" aria-label="建议关注指标">
+          <div class="metric-intro">
+            <strong>评价平台，不只看零件参数。</strong>
+            <span>以下为讨论中建议的指标方向，具体阈值应根据车型、ODD 与安全目标反推。</span>
+          </div>
+          <div class="metric"><strong>故障可运行</strong><small>单点失效后仍具最低运动能力</small></div>
+          <div class="metric"><strong>响应确定性</strong><small>控制链路端到端时延与抖动</small></div>
+          <div class="metric"><strong>运动一致性</strong><small>指令、车辆状态与乘员体感一致</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section conclusion-section" id="takeaway" aria-labelledby="takeaway-title">
+      <div class="section-inner">
+        <div class="conclusion-card reveal">
+          <div class="section-kicker"><span>06</span> Group takeaway</div>
+          <h2 id="takeaway-title">
+            线控底盘平台的核心，不是“取消机械连接”，而是<span>用系统工程重建确定性</span>。
+          </h2>
+
+          <div class="takeaways">
+            <div class="takeaway">
+              <span>01 / POSITION</span>
+              <strong>位于 Systems 层，承担整车级集成职责。</strong>
+              <p>对上响应整车运动意图，对下组织四类子系统；不能把它降格成单一模块。</p>
+            </div>
+            <div class="takeaway">
+              <span>02 / TRACEABILITY</span>
+              <strong>任务决定体系，整车约束系统，模块支撑能力。</strong>
+              <p>每一层都应有输入、输出、边界与可度量指标，形成双向可追溯需求链。</p>
+            </div>
+            <div class="takeaway">
+              <span>03 / VALUE</span>
+              <strong>真正的平台能力，是安全、协同与复用。</strong>
+              <p>从“能执行”到“故障仍可控”，再到“跨车型可验证复用”，才是高级别自动驾驶的底盘底座。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <div class="footer-brand">Wire-Control Chassis Platform</div>
+      <div>面向高级别自动驾驶的线控底盘平台 · 复杂系统工程小组讨论</div>
+    </div>
+    <div>Systems Engineering / 2026</div>
+    <button class="to-top" type="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">回到顶部 ↑</button>
+  </footer>
+
+  <script>
+    const levels = {
+      mission: {
+        num: "01",
+        title: "任务",
+        subtitle: "Mission · 高级别自动驾驶出行使命",
+        desc: "以安全、高效、舒适的无人化出行为总目标，定义整个复杂系统的价值方向。平台最终服务于减少事故、提升通行效率，以及在驾驶任务中持续保持可控。",
+        points: [
+          ["目标", "安全、准时、舒适、可持续运营"],
+          ["约束", "交通法规、ODD、乘员体验"],
+          ["平台映射", "把使命指标转化为车辆运动与安全目标"]
+        ]
+      },
+      sos: {
+        num: "02",
+        title: "体系",
+        subtitle: "System of Systems · 出行服务生态",
+        desc: "自动驾驶车辆并不能独自完成使命。车队平台、路侧基础设施、云控调度、能源补给、监管与救援共同构成体系；底盘平台接收来自体系的环境、运营与安全边界。",
+        points: [
+          ["核心单元", "Robotaxi 车队、路云、运营平台、监管系统"],
+          ["交互", "ODD 下发、任务调度、风险预警、远程协助"],
+          ["平台映射", "响应体系级安全指令与运行边界"]
+        ]
+      },
+      vehicle: {
+        num: "03",
+        title: "整车",
+        subtitle: "Vehicle · L4 自动驾驶车辆",
+        desc: "整车是使命落地的物理载体。质量分布、轴距、底盘高度、动力形式与安全目标共同约束平台设计；线控底盘必须把自身能力收敛为可由整车验证的运动表现。",
+        points: [
+          ["整车属性", "质量、轴距、重心、续航与载荷"],
+          ["运动目标", "轨迹跟踪、制动距离、稳定性与舒适性"],
+          ["平台映射", "提供统一、确定的车辆运动控制能力"]
+        ]
+      },
+      system: {
+        num: "04",
+        title: "系统",
+        subtitle: "Systems · 线控底盘平台",
+        desc: "线控底盘平台把高级别自动驾驶给出的轨迹、速度与安全目标，分解为转向、制动、驱动和悬架的执行指令；同时持续聚合执行器状态，进行冗余仲裁与故障降级，形成整车可验证的运动能力。",
+        points: [
+          ["输入", "轨迹 / 速度 / 加速度 / 安全约束"],
+          ["平台职责", "解耦 · 协同 · 仲裁 · 状态估计"],
+          ["输出", "可控、可测、可预测的整车运动"]
+        ]
+      },
+      subsystem: {
+        num: "05",
+        title: "子系统",
+        subtitle: "Sub-systems · 四类执行能力",
+        desc: "转向、制动、驱动、悬架四个子系统分别完成横向、纵向和垂向运动控制。平台通过统一时间基准、车辆状态与仲裁策略，让它们从“独立执行器”变成协同的运动系统。",
+        points: [
+          ["线控转向", "角度闭环、路感模拟、双通道冗余"],
+          ["线控制动 / 驱动", "减速度与轮端扭矩快速、精确控制"],
+          ["线控悬架", "车身姿态、高度与振动主动调节"]
+        ]
+      },
+      module: {
+        num: "06",
+        title: "模块",
+        subtitle: "Modules · 物理功能单元",
+        desc: "电机、执行器、传感器、控制器、功率器件、线束与电源模块构成系统的物理底座。模块级状态必须可观测、可诊断，才能让上层平台做出正确的冗余切换与降级决策。",
+        points: [
+          ["执行模块", "电机、减速机构、制动执行器、泵阀"],
+          ["感知模块", "转角、扭矩、压力、温度与电流传感器"],
+          ["计算 / 连接", "控制芯片、驱动电路、双电源与车载网络"]
+        ]
+      }
+    };
+
+    const scenarios = {
+      crossing: {
+        name: "城市路口左转",
+        summary: "在混合交通路口完成安全、平顺、可解释的左转，平台需要协同横向、纵向与垂向运动。",
+        steps: [
+          ["Mission", "安全高效地完成无人驾驶载客", "使命指标：安全、舒适、准时、可持续运营。"],
+          ["SoS", "车队、路云、运营与监管协同", "云端下发 ODD、交通与救援约束。"],
+          ["Vehicle", "L4 Robotaxi 选择目标轨迹", "整车评估载荷、速度与安全边界。"],
+          ["System", "平台分解四轮运动指令", "统一协调转角、制动、驱动与姿态。"],
+          ["Subsystem", "四轮转向协同，悬架抑制侧倾", "各执行器闭环响应平台命令。"],
+          ["Module", "电机、传感器与控制芯片执行", "状态反馈进入下一轮运动控制。"]
+        ],
+        status: [
+          ["转向目标", "+32.5°", "四轮协同转向"],
+          ["纵向策略", "12 km/h", "低速通过路口"],
+          ["姿态控制", "主动", "抑制侧倾与俯仰"],
+          ["系统状态", "NORMAL", "全通道健康"]
+        ]
+      },
+      brake: {
+        name: "前车突发急停",
+        summary: "前车突然制动，平台需要在毫秒级时间内完成风险确认、制动力分配与车身姿态稳定。",
+        steps: [
+          ["Mission", "避免碰撞，同时避免危险急停", "以最小风险状态保障乘员与道路参与者。"],
+          ["SoS", "远程监控与道路救援即时待命", "体系层提供事故与异常事件闭环。"],
+          ["Vehicle", "感知融合给出制动与避让边界", "整车判断轮胎附着、载荷与可执行空间。"],
+          ["System", "平台仲裁制动强度与轴荷转移", "协同 EHB、驱动回馈和主动悬架。"],
+          ["Subsystem", "四轮制动力快速建立", "前轴主制动，后轴稳定车身。"],
+          ["Module", "压力阀、电机与轮速传感器高频反馈", "闭环修正滑移率与减速度。"]
+        ],
+        status: [
+          ["制动请求", "-0.72 g", "分级舒适制动"],
+          ["执行方式", "电液协同", "回馈优先、液压补足"],
+          ["姿态控制", "ANTI-DIVE", "主动抑制点头"],
+          ["系统状态", "NORMAL", "冗余通道待命"]
+        ]
+      },
+      wet: {
+        name: "湿滑路面过弯",
+        summary: "路面附着降低时，平台需要提前分配轮端扭矩与制动力，维持车辆横摆稳定与轨迹可预测性。",
+        steps: [
+          ["Mission", "坏天气下仍保持安全、稳定运营", "舒适与效率不得突破稳定边界。"],
+          ["SoS", "气象与路况信息参与 ODD 判定", "体系根据湿滑风险动态收紧运营条件。"],
+          ["Vehicle", "降低目标车速并调整转弯半径", "整车重新计算稳定包络与安全余量。"],
+          ["System", "平台融合轮速、IMU 与附着估计", "按轮分配扭矩并协调四轮转向。"],
+          ["Subsystem", "驱动防滑 + 制动矢量 + 主动悬架", "多子系统共同抑制横摆与侧倾。"],
+          ["Module", "轮速、惯性、扭矩传感器高频采样", "为附着估计与闭环控制提供输入。"]
+        ],
+        status: [
+          ["附着估计", "μ ≈ 0.45", "低附着模式"],
+          ["速度限制", "28 km/h", "按弯道重新计算"],
+          ["横摆控制", "ACTIVE", "扭矩矢量协同"],
+          ["系统状态", "CAUTION", "能力边界已收紧"]
+        ]
+      },
+      fault: {
+        name: "转向通道故障",
+        summary: "主转向通道失效后，平台检测、隔离并切换备份通道，引导车辆进入最小风险状态。",
+        steps: [
+          ["Mission", "故障后不失控，优先保障生命安全", "暂停载客任务，完成安全停车与救援闭环。"],
+          ["SoS", "远程运营中心接管事件处置", "调度救援、乘客沟通与交通疏解。"],
+          ["Vehicle", "整车请求最小风险策略", "限定车速和路径，激活双闪与提示。"],
+          ["System", "平台检测故障并切换冗余通道", "降级运动模式，保持转向可控性。"],
+          ["Subsystem", "备份转向电机接管，制动准备", "悬架维持姿态，驱动限制输出。"],
+          ["Module", "故障传感器、隔离开关与备份电源工作", "模块级诊断支撑系统级决策。"]
+        ],
+        status: [
+          ["故障响应", "< 50 ms", "检测与隔离目标"],
+          ["转向能力", "BACKUP", "备份通道接管"],
+          ["运行策略", "MRM", "安全停车中"],
+          ["系统状态", "DEGRADED", "降级但可控"]
+        ]
+      }
+    };
+
+    const detailNum = document.getElementById("detail-num");
+    const detailTitle = document.getElementById("detail-title");
+    const detailDesc = document.getElementById("detail-desc");
+    const detailPoints = document.getElementById("detail-points");
+    const detailContent = document.getElementById("detail-content");
+    const levelCards = [...document.querySelectorAll(".level-card")];
+
+    levelCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const item = levels[card.dataset.level];
+        levelCards.forEach((button) => {
+          const selected = button === card;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-selected", selected.toString());
+        });
+
+        detailNum.textContent = item.num;
+        detailTitle.innerHTML = `${item.title} <span>${item.subtitle}</span>`;
+        detailDesc.textContent = item.desc;
+        detailPoints.innerHTML = item.points
+          .map(([label, text]) => `<div class="detail-point"><span>${label}</span><strong>${text}</strong></div>`)
+          .join("");
+
+        detailContent.classList.remove("fade-swap");
+        void detailContent.offsetWidth;
+        detailContent.classList.add("fade-swap");
+      });
+    });
+
+    const scenarioTabs = [...document.querySelectorAll(".scenario-tab")];
+    const scenarioPanel = document.getElementById("scenario-panel");
+    const scenarioName = document.getElementById("scenario-name");
+    const scenarioSummary = document.getElementById("scenario-summary");
+    const scenarioChain = document.getElementById("scenario-chain");
+    const scenarioStatus = document.getElementById("scenario-status");
+
+    scenarioTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const data = scenarios[tab.dataset.scenario];
+        scenarioTabs.forEach((button) => {
+          const selected = button === tab;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-selected", selected.toString());
+        });
+
+        scenarioName.textContent = data.name;
+        scenarioSummary.textContent = data.summary;
+        scenarioChain.innerHTML = data.steps.map(([layer, title, desc]) => `
+          <div class="scenario-step">
+            <span class="step-dot"></span>
+            <small>${layer}</small>
+            <strong>${title}</strong>
+            <p>${desc}</p>
+          </div>
+        `).join("");
+        scenarioStatus.innerHTML = data.status.map(([label, value, detail]) => `
+          <div class="status-cell">
+            <small>${label}</small>
+            <strong>${value}</strong>
+            <span>${detail}</span>
+          </div>
+        `).join("");
+
+        scenarioPanel.classList.remove("fade-swap");
+        void scenarioPanel.offsetWidth;
+        scenarioPanel.classList.add("fade-swap");
+      });
+    });
+
+    const nav = document.getElementById("site-nav");
+    const menuToggle = document.getElementById("menu-toggle");
+    const navLinks = document.getElementById("nav-links");
+
+    menuToggle.addEventListener("click", () => {
+      const open = navLinks.classList.toggle("open");
+      menuToggle.setAttribute("aria-expanded", open.toString());
+      menuToggle.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
+    });
+
+    navLinks.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "打开导航");
+      });
+    });
+
+    const updateNav = () => {
+      nav.classList.toggle("scrolled", window.scrollY > 30);
+    };
+    updateNav();
+    window.addEventListener("scroll", updateNav, { passive: true });
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -40px" });
+
+    document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
+
+    const sectionIds = ["position", "levels", "architecture", "scenario", "principles", "takeaway"];
+    const sectionLinks = [...document.querySelectorAll(".nav-links a")];
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          sectionLinks.forEach((link) => {
+            link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`);
+          });
+        }
+      });
+    }, { rootMargin: "-30% 0px -58% 0px" });
+
+    sectionIds.forEach((id) => {
+      const section = document.getElementById(id);
+      if (section) sectionObserver.observe(section);
+    });
+  </script>
+</body>
+</html>
